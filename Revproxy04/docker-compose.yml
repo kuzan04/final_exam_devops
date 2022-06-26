@@ -1,0 +1,19 @@
+version: '3'
+services:
+  nginx-proxy:
+    image: jwilder/nginx-proxy:alpine
+    container_name: revproxy04
+    restart: always
+    ports:
+      - "80:80"
+    volumes:
+      - /var/run/docker.sock:/tmp/docker.sock:ro
+    deploy:
+      placement:
+        constraints:
+           - node.role == manager
+      replicas: 2
+networks:
+  default:
+    external:
+      name: Revproxy04_network

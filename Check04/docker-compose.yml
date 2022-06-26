@@ -1,0 +1,20 @@
+version: '3'
+
+services:
+  login_rpc:
+    build: python/
+    image: login_rpc
+    restart: always
+    networks:
+      - webproxy
+      - default
+    deploy:
+      replicas: 2
+
+networks:
+  default:
+    external:
+      name: Service04_network
+  webproxy:
+    external:
+      name: Revproxy04_network

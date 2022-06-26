@@ -1,0 +1,69 @@
+version: '3'
+services:
+  php:
+    build: php/
+    image: lemst_php
+    restart: unless-stopped
+    volumes:
+      - ./html/:/var/www/html/
+    expose:
+      - "8888"
+    depends_on:
+      - mariadb
+    deploy:
+      replicas: 2
+
+  nginx:
+    restart: unless-stopped
+    image: nginx:stable-alpine
+    volumes:
+      - ./html/:/var/www/html/
+      - ./nginx/conf/nginx.conf:/etc/nginx/conf/nginx.conf:ro
+      - ./nginx/conf.d:/etc/nginx/conf.d:ro
+    expose:
+      - "80"
+    environment:
+      VIRTUAL_HOST: www.docker04.com
+    networks:
+      - webproxy
+      - default
+    deploy:
+      replicas: 2
+
+  mariadb:
+    image: mariadb:latest
+    restart: always
+    volumes:
+      - ./mariadb/initdb/:/docker-entrypoint-initdb.d
+      - ./mariadb/data/:/var/lib/mysql/
+    environment:
+      - MYSQL_ROOT_PASSWORD=devops101
+      - MYSQL_DATABASE=devops_db
+      - MYSQL_USER=devops
+      - MYSQL_PASSWORD=devops101
+    deploy:
+      replicas: 2
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    restart: always
+    networks:
+      - webproxy
+      - default
+    environment:
+       - VIRTUAL_HOST=database.docker04.com
+       - PMA_HOST=mariadb
+    expose:
+      - "80"
+    deploy:
+      replicas: 2
+
+networks:
+  default:
+    external:
+      name:
+        Lemp04_network
+  webproxy:
+    external:
+      name:
+        Revproxy04_network
